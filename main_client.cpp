@@ -26,9 +26,7 @@ int main()
     {
         client.Connect(8888, "127.0.0.1");
 
-        bool connected = true;
-
-        while (connected)
+        while (client.isConnect())
         {
             poll(pfds, 2, INFTIM);
 
@@ -45,7 +43,7 @@ int main()
                 getline(std::cin, query);
 
                 if (std::cin.eof())
-                    connected = false;
+                    client.Close();
                 else 
                     client.Send(query);
             }
@@ -63,8 +61,6 @@ int main()
     {
         std::cout << "OTHER ERROR: " << ex.what() << std::endl;
     }
-
-    client.Close();
 
     return 0;
 }

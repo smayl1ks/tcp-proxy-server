@@ -38,5 +38,7 @@ public:
 
     std::string getServerIP() const;
     int getClientFd() const;
+
     bool isOpen() const;
+    bool isConnect() const;
 };
