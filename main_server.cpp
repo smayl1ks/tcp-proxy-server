@@ -1,10 +1,12 @@
 #include "include/proxy_server.h"
+#include "src/logger.cpp"
 #include "include/database.h"
-
 #include <iostream>
 
 int main()
 {
+    Logger logger("../logs/basic-log.txt", "INFO");
+
     int port = 8888; 
     std::string ip = "127.0.0.1";
     std::string db_conninfo = "dbname=test user=tester password=12345 host=localhost port=5432";
@@ -21,9 +23,7 @@ int main()
 
         while (true)
         {
-            if(server.Poll() == NO_ACTIVE_CLIENTS) {
-                continue;
-            }
+            server.Poll();
 
             for (const auto& [sockfd, client]: server.clients)
             {
@@ -35,8 +35,9 @@ int main()
                         continue;
                     }
 
+                    logger.log(query, client.ip);
                     std::cout << "QUERY: " << query << "\n";
-                    //saveLog(query, client.ip);
+
                     std::string db_answer = database.Exec(query);
                     server.Send(sockfd, db_answer);
                 }

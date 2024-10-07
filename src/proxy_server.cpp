@@ -152,7 +152,8 @@ std::string ProxyServer::Recv(int sockfd)
     ssize_t bytes_read = recv(sockfd, buf, sizeof(buf), 0);
 
     if (bytes_read > 0) {
-        res_query.append(buf, sizeof(buf));
+        //res_query = string(buf);
+        //res_query.append(buf, sizeof(buf));
     }
     else if (bytes_read == 0) {
         close(sockfd);
@@ -161,7 +162,7 @@ std::string ProxyServer::Recv(int sockfd)
         throw std::system_error(errno, std::generic_category());
     }
 
-    return res_query;
+    return buf;
 }
 
 ProxyServer::~ProxyServer()

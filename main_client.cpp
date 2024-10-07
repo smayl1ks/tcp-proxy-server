@@ -4,8 +4,8 @@
 
 int main()
 {
-    // int port; 
-    // std::string ip;
+    int port = 8888; 
+    std::string ip = "127.0.0.1";
 
     // config(port, ip);
 
@@ -24,7 +24,7 @@ int main()
 
     try 
     {
-        client.Connect(8888, "127.0.0.1");
+        client.Connect(port, ip);
 
         while (client.isConnect())
         {
