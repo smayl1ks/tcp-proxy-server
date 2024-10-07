@@ -2,8 +2,8 @@ cmake_minimum_required(VERSION 3.8.1)
 
 project(proxy_server)
 
-set(CMAKE_CXX_STANDARD 11)
-set(CMAKE_CXX_FLAGS ${CMAKE_CXX_FLAGS} "-std=c++11")
+set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_FLAGS ${CMAKE_CXX_FLAGS} "-std=c++17")
 
 include_directories(include)
 
@@ -11,7 +11,7 @@ include_directories(include)
 #find_package(PostgreSQL REQUIRED) 
 #include_directories(${PostgreSQL_INCLUDE_DIR}) 
 
-option(PROXY_SERVER "Build PROXY_SERVER" OFF)
+option(PROXY_SERVER "Build PROXY_SERVER" ON)
 
 if (PROXY_SERVER)
 

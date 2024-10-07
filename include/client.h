@@ -12,7 +12,8 @@
 
 #include <string>
 
-
+// Значение timeout
+// INFTIM - ждать события
 #define INFTIM -1
 
 class Client 

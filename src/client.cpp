@@ -14,7 +14,7 @@ Client::Client()
 void Client::Connect(int port, std::string ip)
 {
     if (!isOpen()) {
-        throw std::runtime_error("connect error (socket is closed)");
+        throw std::runtime_error("Connect error (socket is closed)");
     }
 
     servaddr.sin_family = AF_INET;
@@ -36,7 +36,7 @@ void Client::Connect(int port, std::string ip)
 void Client::Send(std::string query)
 {
     if (!isOpen()) {
-        throw std::runtime_error("send error (socket is closed)");
+        throw std::runtime_error("Send error (socket is closed)");
     }
 
     // Error list in manual
@@ -52,7 +52,7 @@ void Client::Send(std::string query)
 std::string Client::Recv()
 {
     if (!isOpen()) {
-        throw std::runtime_error("recv error (socket is closed)");
+        throw std::runtime_error("Recv error (socket is closed)");
     }
 
     std::string res_query;
@@ -68,7 +68,7 @@ std::string Client::Recv()
     } 
     else if (bytes_read == 0)
     {
-        return "DISCONNECTED";
+        throw std::runtime_error("Server disconnected");
     } 
     else 
     {
