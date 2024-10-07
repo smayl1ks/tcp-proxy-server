@@ -1,22 +1,23 @@
 #include "include/proxy_server.h"
+#include "include/database.h"
 
 #include <iostream>
 
 int main()
 {
-    // int port; 
-    // std::string ip;
-    // std::string db_conninfo;
+    int port = 8888; 
+    std::string ip = "127.0.0.1";
+    std::string db_conninfo = "dbname=test user=tester password=12345 host=localhost port=5432";
 
     // config(port, ip, db_conninfo);
 
     ProxyServer server;
-    //PGdatabase database;
+    PGdatabase database;
 
     try
     {
-        server.Start(8888, "127.0.0.1");
-        // database.connect(db_conninfo);
+        server.Start(port, ip);
+        database.Connect(db_conninfo);
 
         while (true)
         {
@@ -36,8 +37,8 @@ int main()
 
                     std::cout << "QUERY: " << query << "\n";
                     //saveLog(query, client.ip);
-                    //std::string db_answer = database.query_exec(query);
-                    server.Send(sockfd, query);
+                    std::string db_answer = database.Exec(query);
+                    server.Send(sockfd, db_answer);
                 }
             }
         }
@@ -53,6 +54,9 @@ int main()
     {
         std::cout << "OTHER ERROR: " << ex.what() << std::endl;
     }
+
+    server.Close();
+    database.Close();
 
     return 0;
 }
