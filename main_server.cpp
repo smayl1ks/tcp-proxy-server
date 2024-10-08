@@ -9,6 +9,8 @@ int main()
 
     int port = 8888; 
     std::string ip = "127.0.0.1";
+
+    // Тестотовая бд создавалась вручную
     std::string db_conninfo = "dbname=test user=tester password=12345 host=localhost port=5432";
 
     // config(port, ip, db_conninfo);

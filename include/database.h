@@ -2,6 +2,7 @@
 
 #include <libpq-fe.h>
 #include <iostream>
+#include <vector>
 #include <system_error>
 #include <string>
 

@@ -23,6 +23,10 @@ std::string PGdatabase::Exec(std::string query)
         return PQerrorMessage(conn);
     }
 
+    if (PQresultStatus(result) == PGRES_COMMAND_OK) {
+        return PQcmdTuples(result); 
+    }
+    
     return "CORRECT";
 }
 

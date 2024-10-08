@@ -7,7 +7,8 @@ set(CMAKE_CXX_FLAGS ${CMAKE_CXX_FLAGS} "-std=c++17")
 
 add_library(${PROJECT_NAME}
     src/proxy_server.cpp
-    src/database.cpp)
+    src/database.cpp
+    src/logger.cpp)
 
 # Поиск PostgreSQL 
 find_package(PostgreSQL REQUIRED) 
@@ -36,7 +37,5 @@ if (CLIENT)
     )
 
     add_executable(client main_client.cpp src/client.cpp)
-    # Добавление флага -lpq 
-    # target_link_libraries(client ${PROJECT_NAME} ${PostgreSQL_LIBRARIES})
-
+    
 endif()
