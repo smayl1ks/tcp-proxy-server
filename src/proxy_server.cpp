@@ -25,15 +25,15 @@ void ProxyServer::Start(int port, std::string ip)
         throw std::runtime_error("connect error (socket is closed)");
     }
 
-    addr.sin_family = AF_INET;
-    addr.sin_port = htons(port);
-    addr.sin_addr.s_addr = inet_addr(ip.data()); // OR INADDR_LOOPBACK
+    server_addr.sin_family = AF_INET;
+    server_addr.sin_port = htons(port);
+    server_addr.sin_addr.s_addr = inet_addr(ip.data()); // OR INADDR_LOOPBACK
 
-    addrlen = sizeof(addr);
+    addrlen = sizeof(server_addr);
 
     // Error list in manual
     // https://man7.org/linux/man-pages/man2/bind.2.html
-    if (bind(sockfd, (sockaddr*) &addr, addrlen) == -1) {
+    if (bind(sockfd, (sockaddr*) &server_addr, addrlen) == -1) {
         throw std::system_error(errno, std::generic_category());
     }
 
@@ -47,24 +47,25 @@ void ProxyServer::Start(int port, std::string ip)
 int ProxyServer::Accept()
 {
     // Создание нового клиента
-    sockaddr_in cliaddr;
-    socklen_t cliaddrlen = sizeof(cliaddr);
+    sockaddr_in client_addr;
+    socklen_t addrlen = sizeof(client_addr);
 
     // Error list in manual
     // https://man7.org/linux/man-pages/man2/accept.2.html
-    int clientfd = accept(sockfd, (sockaddr*)&cliaddr, &cliaddrlen);
+    int clientfd = accept(sockfd, (sockaddr*)&client_addr, &addrlen);
 
     if (clientfd  == -1) {
-        throw std::runtime_error("accept error ()");
+        throw std::runtime_error("accept error");
     }
 
-    std::string ip = inet_ntoa(cliaddr.sin_addr);
-    
-    // Сохраняем все данные клиента (структура Client)
+    std::string ip = inet_ntoa(client_addr.sin_addr);
+
     clients[clientfd].ip = ip;
+    clients[clientfd].fd = clientfd;
 
-    std::cout << "NEW CONNECT: " << clientfd  << " port" << std::endl;
-
+    std::cout << "NEW CONNECT: port " << clientfd 
+              << " ip: " << ip << std::endl;
+            
     return clientfd; 
 }
 
@@ -75,7 +76,7 @@ int ProxyServer::Poll()
 
     // Error list in manual
     // https://man7.org/linux/man-pages/man2/poll.2.html
-    int nready = poll(poll_client, maxi + 1, INFTIM);
+    int nready = poll(poll_client, maxi + 1, TIMEOUT);
 
     if (nready == -1) {
         throw std::system_error(errno, std::system_category());
@@ -96,7 +97,7 @@ int ProxyServer::Poll()
         poll_client[i].events = POLLIN;
         maxi = (i > maxi) ? i : maxi;
 
-        return NO_ACTIVE_CLIENTS;
+        return NO_EVENTS;
     }
 
     // Проверка всех клиентов на наличие данных 
@@ -118,7 +119,16 @@ int ProxyServer::Poll()
         }
     }
 
-    return !NO_ACTIVE_CLIENTS;
+    return !NO_EVENTS;
+}
+
+void ProxyServer::setActiveClients(std::vector <Client>& v)
+{
+    v.clear();
+    for (const auto& [sockfd, client] : clients) {
+        if (client.active)
+            v.push_back(client);
+    }
 }
 
 void ProxyServer::Send(int sockfd, const std::string& massage)
@@ -142,23 +152,18 @@ std::string ProxyServer::Recv(int sockfd)
     if (!isOpen()) {
         throw std::runtime_error("recv error (socket is closed)");
     }
-
-    std::string res_query;
-    char buf[1024] = {0};
+    
+    char buf[1024] {0};
 
     // Error list in manual
     // https://man7.org/linux/man-pages/man2/recvfrom.2.html
     // Connection reset by peer
     ssize_t bytes_read = recv(sockfd, buf, sizeof(buf), 0);
 
-    if (bytes_read > 0) {
-        //res_query = string(buf);
-        //res_query.append(buf, sizeof(buf));
-    }
-    else if (bytes_read == 0) {
+    if (bytes_read == 0) {
         close(sockfd);
     }
-    else {
+    else if (bytes_read == -1) {
         throw std::system_error(errno, std::generic_category());
     }
 
@@ -187,14 +192,4 @@ bool ProxyServer::isOpen() const
     }
 
     return true;
-}
-
-std::string ProxyServer::getServerIP() const
-{
-    return inet_ntoa(addr.sin_addr);
-}
-
-int ProxyServer::getServerFd() const
-{
-    return sockfd;
 }

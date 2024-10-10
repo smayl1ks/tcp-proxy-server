@@ -18,6 +18,7 @@ int main()
     ProxyServer server;
     PGdatabase database;
 
+    std::vector <Client> clients;
     try
     {
         server.Start(port, ip);
@@ -25,24 +26,23 @@ int main()
 
         while (true)
         {
-            server.Poll();
+            if (server.Poll() == NO_EVENTS)
+                continue;
 
-            for (const auto& [sockfd, client]: server.clients)
+            server.setActiveClients(clients);
+
+            for (const auto& client: clients)
             {
-                if (client.active) {
+                std::string query = server.Recv(client.fd);
 
-                    std::string query = server.Recv(sockfd);
-
-                    if (query.empty()) {
-                        continue;
-                    }
-
-                    logger.log(query, client.ip);
-                    std::cout << "QUERY: " << query << "\n";
-
-                    std::string db_answer = database.Exec(query);
-                    server.Send(sockfd, db_answer);
+                if (query.empty()) {
+                    continue;
                 }
+
+                logger.log(query, client.ip);
+
+                std::string db_answer = database.Exec(query);
+                server.Send(client.fd, db_answer);
             }
         }
     } catch (const std::system_error& ex)
